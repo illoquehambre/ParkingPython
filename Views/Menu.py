@@ -16,12 +16,22 @@ def menu_acciones_admin():
     print()
 
 
-def menu_ingreso_temporal():
+def menu_ingreso_temporal(lista):
+    turismo = 0
+    moto = 0
+    movilidad_reducida = 0
     print("Estacionar de forma temporal")
+    for i in lista:
+        if i.tipo.value == 1 and not(i.ocupado or i.reservado):
+            turismo += 1
+        elif i.tipo.value == 2 and not(i.ocupado or i.reservado):
+            moto += 1
+        elif i.tipo.value == 3 and not(i.ocupado or i.reservado):
+            movilidad_reducida += 1
     print("Indique que tipo de vehiculo tiene")
-    print("1 - Turismo")
-    print("2 - Moto")
-    print("3 - Movilidad Reducida")
+    print("1 - Turismo - Plazas disponibles: "+str(turismo))
+    print("2 - Moto - Plazas disponibles: "+str(moto))
+    print("3 - Movilidad Reducida - Plazas disponibles: "+str(movilidad_reducida))
 
 
 def retirar_vehiculo():

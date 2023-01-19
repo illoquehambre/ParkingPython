@@ -1,7 +1,5 @@
-from enum import Enum
 
-from Models.Tipo import Tipo
-from Models.Vehiculo import Vehiculo
+from Models import Vehiculo
 
 
 class Plaza:

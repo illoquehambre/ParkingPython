@@ -9,7 +9,7 @@ from Models.Vehiculo import Vehiculo
 from datetime import datetime, timedelta
 
 from Views.Menu import main_menu, menu_acciones_usuario, menu_ingreso_temporal, retirar_vehiculo
-from Views.Ticket import ticket_entrada_temporal, ticket_salida_temporal
+from Views.Ticket import ticket_entrada_temporal, ticket_salida_temporal, ticket_alta_abonado
 
 decision = 0
 numPlazas = 40
@@ -21,11 +21,12 @@ listPlazas = []
 listVehiculos = []
 listClientes: List[Cliente] = []
 listTicket = []
+encontrado = False
 for i in range(numPlazas):
     if i < numPlazas * (porcentajeTurismo / 100):
         listPlazas.append(
             Plaza(precio=0.12, ocupado=False, reservado=False, tipo=Tipo.Turismo, vehiculo=None, idPlaza=i))
-    elif i < (numPlazas * (porcentajeMoto + porcentajeTurismo / 100)):
+    elif i < (numPlazas * ((porcentajeMoto + porcentajeTurismo) / 100)):
         listPlazas.append(
             Plaza(tipo=Tipo.Moto, precio=0.8, ocupado=False, reservado=False, vehiculo=None, idPlaza=i))
     else:
@@ -58,18 +59,20 @@ while seguir:
 
             if fecha_objeto1 < fecha_objeto2:
                 for c in listClientes:
-                    if (type(c) != Abonado) & (c.ticket.fecha_alta >= fecha_objeto1) \
-                            & (c.ticket.fecha_baja <= fecha_objeto2):
-                        total += c.ticket.precio  # AQUI PETA
-                        # TypeError: unsupported operand type(s) for +=: 'int' and 'NoneType'
+                    if (type(c) != Abonado) and (c.ticket.fecha_baja is not None) and \
+                            (c.ticket.fecha_alta >= fecha_objeto1) and (c.ticket.fecha_baja <= fecha_objeto2):
+                        total += c.ticket.precio
             else:
                 for c in listClientes:
-                    if (type(c) != Abonado) & (c.ticket.fecha_alta >= fecha_objeto2) \
-                            & (c.ticket.fecha_baja <= fecha_objeto1):
+                    if (type(c) != Abonado) and (c.ticket.fecha_alta >= fecha_objeto2) \
+                            and (c.ticket.fecha_baja <= fecha_objeto1):
                         total += c.ticket.precio
-            print("El total recaudado es de " + str(total))
+            print("El total recaudado es de " + f"{total:.2f}" + "€")
         elif decision == 3:
             print("Aqui se deberian poder consultar todos los abonados")
+            for a in listClientes:
+                if isinstance(a, Abonado):
+                    print(a)
         elif decision == 4:
             print("Indique que gestiones desea realizar: ")
             print("1 - Dar de alta un Abonado")
@@ -80,13 +83,14 @@ while seguir:
             if decision == 1:
                 print("Dar de alta a una abonado")
                 print("Introduzca los siguientes datos: ")
-                menu_ingreso_temporal()
+                menu_ingreso_temporal(listPlazas)
                 decision = int(input())
 
                 print("Buscando plazas disponibles para su vehículo")
                 x = 0
+
                 while x < len(listPlazas):
-                    if listPlazas[x].tipo.value == decision & (not listPlazas[x].ocupado) & (
+                    if listPlazas[x].tipo.value == decision and (not listPlazas[x].ocupado) and (
                             not listPlazas[x].reservado):
                         print("Plaza encontrada")
                         print("Introduzca los siguientes datos conforme se le indiquen")
@@ -99,15 +103,15 @@ while seguir:
                                     fecha_alta=datetime.now(), fecha_baja=None, precio=None,
                                     pin=random.randint(100000, 999999)
                                 ),
-                                nombre=input("Nombre: "),
-                                apellidos=input("Apellidos: "),
-                                dni=input("DNI: "),
-                                email=input("Email: "),
-                                tarjeta=input("Tarjeta de crédito: "),
 
                             )
 
                         )
+                        listPlazas[x].vehiculo.cliente.nombre = input("Nombre: "),
+                        listPlazas[x].vehiculo.cliente.apellidos = input("Apellidos: "),
+                        listPlazas[x].vehiculo.cliente.dni = input("DNI: "),
+                        listPlazas[x].vehiculo.cliente.email = input("Email: "),
+                        listPlazas[x].vehiculo.cliente.tarjeta = input("Tarjeta de crédito: "),
                         print("Elija entre las siguientes opciones la duracion de su bono")
                         print("1 - Mensual - 25€")
                         print("2 - Trimestral - 70€")
@@ -117,32 +121,38 @@ while seguir:
                         if decision == 1:
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
                                 = listPlazas[x].vehiculo.cliente.ticket.fecha_alta + timedelta(days=30)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = 25
                         elif decision == 2:
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
                                 = listPlazas[x].vehiculo.cliente.ticket.fecha_alta + timedelta(days=90)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = 70
                         elif decision == 3:
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
                                 = listPlazas[x].vehiculo.cliente.ticket.fecha_alta + timedelta(days=180)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = 130
                         elif decision == 4:
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
                                 = listPlazas[x].vehiculo.cliente.ticket.fecha_alta + timedelta(days=365)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = 200
                         else:
                             print("Opcion Incorrecta, mensualidad añadida por defecto")
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
                                 = listPlazas[x].vehiculo.cliente.ticket.fecha_alta + timedelta(days=30)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = 25
 
+                        listPlazas[x].reservado = True
                         listVehiculos.append(listPlazas[x].vehiculo)
                         listClientes.append(listPlazas[x].vehiculo.cliente)
                         listTicket.append(listPlazas[x].vehiculo.cliente.ticket)
 
-                        ticket_entrada_temporal(listPlazas[x])
+                        ticket_alta_abonado(listPlazas[x])
                         x = len(listPlazas)
                     x += 1
             elif decision == 2:
                 print("Modificar un abonado")
                 dni = input("Introduzca el DNI del abonado por favor: ")
                 for c in listClientes:
-                    if (type(c) == Abonado) & (c.dni == dni):
+                    if (type(c) == Abonado) and (c.dni == dni):
                         print("1 - Renovar abono")
                         print("2 - Modificar datos personales")
                         decision = int(input())
@@ -155,23 +165,28 @@ while seguir:
                             decision = int(input())
                             if decision == 1:
                                 c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=30)
+                                c.ticket.precio += 25
                             elif decision == 2:
                                 c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=90)
+                                c.ticket.precio += 70
                             elif decision == 3:
                                 c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=180)
+                                c.ticket.precio += 130
                             elif decision == 4:
                                 c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=365)
+                                c.ticket.precio += 200
                             else:
                                 print("Opcion Incorrecta")
                         elif decision == 2:
-                            c.nombre = input("Nombre: ")
-                            c.apellidos = input("Apellidos: ")
-                            c.dni = input("DNI: ")
-                            c.email = input("Email: ")
-                            c.tarjeta = input("Tarjeta de crédito: ")
+                            c.nombre = input("Nombre anterior: "+c.nombre+" Nuevo: ")
+                            c.apellidos = input("Apellidos anterior: "+c.apellidos+" Nuevo: ")
+                            c.dni = input("DNI anterior: "+c.dni+" Nuevo: ")
+                            c.email = input("Email anterior: "+c.email+" Nuevo: ")
+                            c.tarjeta = input("Tarjeta de crédito anterior: "+c.tarjeta+" Nuevo: ")
+                    else:
+                        print("Cliente no encontrado")
             elif decision == 3:
                 print("Borrar datos de un abonado")
-                
 
     else:
         menu_acciones_usuario()
@@ -180,14 +195,14 @@ while seguir:
             print("Para generar un nuevo Bono por favor contacte con el personal del Parking.\n"
                   "Muchas Gracias.")
         elif decision == 2:
-            menu_ingreso_temporal()
+            menu_ingreso_temporal(listPlazas)
             decision = int(input())
 
             print("Buscando plazas disponibles para su vehículo")
             x = 0
             while x < len(listPlazas):
 
-                if listPlazas[x].tipo.value == decision & (not listPlazas[x].ocupado) & (not listPlazas[x].reservado):
+                if listPlazas[x].tipo.value == decision and (not listPlazas[x].ocupado) and (not listPlazas[x].reservado):
                     print("Plaza encontrada")
                     listPlazas[x].vehiculo = Vehiculo(
                         matricula=input("Introduzca su matricula"),
@@ -200,23 +215,23 @@ while seguir:
                         )
                     )
                     # Esto irá en uan clase Data y se volcará en el pickle cuando se indique
+                    listPlazas[x].ocupado = True
                     listVehiculos.append(listPlazas[x].vehiculo)
                     listClientes.append(listPlazas[x].vehiculo.cliente)
                     listTicket.append(listPlazas[x].vehiculo.cliente.ticket)
 
                     ticket_entrada_temporal(listPlazas[x])
                     x = len(listPlazas)
+
                 x += 1
 
-            else:
-                print("Número incorrecto, por favor intente de nuevo")
         elif decision == 3:
             print("Ingresar con un abono activo")
             x = 0
             matricula = input("Por favor indique la matrícula de su vehículo")
             while x < len(listVehiculos):
                 print(listPlazas[x].vehiculo.matricula)
-                if (listPlazas[x].vehiculo.matricula == matricula) & type(listPlazas[x].vehiculo.cliente) == Abonado:
+                if (listPlazas[x].vehiculo.matricula == matricula) and type(listPlazas[x].vehiculo.cliente) == Abonado:
                     dni = input("Por favor indique su DNI")
                     if listPlazas[x].vehiculo.cliente.dni == dni:
                         listPlazas[x].ocupado = False
@@ -231,23 +246,19 @@ while seguir:
                 x += 1
 
         elif decision == 4:
-            retirar_vehiculo()
-            decision = int(input())
-            if decision == 1:
-                print("Salida de Abonados")
-                x = 0
-                matricula = input("Introduzca la matrícula de su coche por favor")
+            x = 0
+            matricula = input("Introduzca la matrícula de su coche por favor")
 
-                while x < len(listVehiculos):
-                    print(listPlazas[x].vehiculo.matricula)
-                    if listPlazas[x].vehiculo.matricula == matricula:
+            while x < len(listPlazas):
+
+                if listPlazas[x].ocupado and listPlazas[x].vehiculo.matricula == matricula:
+                    encontrado = True
+                    if type(listPlazas[x].vehiculo.cliente) == Abonado:
                         pin = input("Introduzca su pin")
                         if pin == listPlazas[x].vehiculo.cliente.ticket.pin:
 
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja = datetime.now()
                             ticket_salida_temporal(listPlazas[x])
-                            listClientes.remove(listPlazas[x].vehiculo.cliente)
-                            listVehiculos.remove(listPlazas[x].vehiculo)
                             listPlazas[x].ocupado = False
                             print("Vehiculo retirado")
                             x = len(listPlazas)
@@ -255,21 +266,17 @@ while seguir:
                             print("Pin incorrecto máquina.\n"
                                   "¿De quien intentas sacar el coche pillin? ;)")
                     else:
-                        print("Matrícula incorrecta.\n"
-                              "¿Ni tu propia matrícula te sabes pringao?")
-                    x += 1
-            elif decision == 2:
-                x = 0
-                print("Salida cliente normal")
-                matricula = input("Introduzca la matrícula de su coche por favor")
-
-                while x < len(listVehiculos):
-                    if listPlazas[x].vehiculo.matricula == matricula:
                         pin = int(input("Introduzca su pin"))
                         if pin == listPlazas[x].vehiculo.cliente.ticket.pin:
 
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja = datetime.now()
+                            tiempo_total = (
+                                    listPlazas[x].vehiculo.cliente.ticket.fecha_baja
+                                    - listPlazas[x].vehiculo.cliente.ticket.fecha_alta)
+                            listPlazas[x].vehiculo.cliente.ticket.precio = (tiempo_total.total_seconds() / 60) * \
+                                                                           listPlazas[x].precio
                             ticket_salida_temporal(listPlazas[x])
+                            listVehiculos.remove(listPlazas[x].vehiculo)
                             listPlazas[x].ocupado = False
                             listPlazas[x].vehiculo = None
                             print("Vehiculo retirado")
@@ -277,10 +284,12 @@ while seguir:
                         else:
                             print("Pin incorrecto máquina.\n"
                                   "¿De quien intentas sacar el coche pillin? ;)")
-                    else:
-                        print("Matrícula incorrecta.\n"
-                              "¿Ni tu propia matrícula te sabes pringao?")
-                    x += 1
+                            x = len(listPlazas)
+                if not encontrado:
+                    print("Vehiculo no encontrado")
+                x += 1
+                encontrado = False
+
             else:
                 print("Volver pa atras")
 
