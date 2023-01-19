@@ -2,11 +2,13 @@ from Models.Cliente import Cliente
 
 
 class Abonado(Cliente):
-    __nombre = ''
-    __apellidos = ''
-    __dni = ''
-    __email = ''
-    __tarjeta = ''
+    def __init__(self, ticket, nombre, apellidos, dni, email, tarjeta):
+        super().__init__(ticket)
+        self.__nombre = nombre
+        self.__apellidos = apellidos
+        self.__dni = dni
+        self.__email = email
+        self.__tarjeta = tarjeta
 
     @property
     def nombre(self):

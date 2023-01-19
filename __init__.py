@@ -72,7 +72,9 @@ while seguir:
             print("Aqui se deberian poder consultar todos los abonados")
             for a in listClientes:
                 if isinstance(a, Abonado):
-                    print(a)
+                    print("Nombre: "+str(a.nombre)+', '+"Apellidos: "+str(a.apellidos)+', '+"DNI: "+str(a.dni)
+                          +', '"Email: "+str(a.email)+', '+"Tarjeta: "+str(a.tarjeta)+',\n'+
+                          "Total: "+str(a.ticket.precio)+'€')
         elif decision == 4:
             print("Indique que gestiones desea realizar: ")
             print("1 - Dar de alta un Abonado")
@@ -103,15 +105,16 @@ while seguir:
                                     fecha_alta=datetime.now(), fecha_baja=None, precio=None,
                                     pin=random.randint(100000, 999999)
                                 ),
+                                nombre=input("Nombre: "),
+                                apellidos=input("Apellidos: "),
+                                dni=input("DNI: "),
+                                email=input("Email: "),
+                                tarjeta=input("Tarjeta de crédito: "),
 
                             )
 
                         )
-                        listPlazas[x].vehiculo.cliente.nombre = input("Nombre: "),
-                        listPlazas[x].vehiculo.cliente.apellidos = input("Apellidos: "),
-                        listPlazas[x].vehiculo.cliente.dni = input("DNI: "),
-                        listPlazas[x].vehiculo.cliente.email = input("Email: "),
-                        listPlazas[x].vehiculo.cliente.tarjeta = input("Tarjeta de crédito: "),
+
                         print("Elija entre las siguientes opciones la duracion de su bono")
                         print("1 - Mensual - 25€")
                         print("2 - Trimestral - 70€")
@@ -229,21 +232,25 @@ while seguir:
             print("Ingresar con un abono activo")
             x = 0
             matricula = input("Por favor indique la matrícula de su vehículo")
-            while x < len(listVehiculos):
+            while x < len(listPlazas):
                 print(listPlazas[x].vehiculo.matricula)
-                if (listPlazas[x].vehiculo.matricula == matricula) and type(listPlazas[x].vehiculo.cliente) == Abonado:
+                if (listPlazas[x].vehiculo.matricula == matricula) and (not listPlazas[x].ocupado) \
+                        and type(listPlazas[x].vehiculo.cliente) == Abonado:
+                    encontrado = True
                     dni = input("Por favor indique su DNI")
                     if listPlazas[x].vehiculo.cliente.dni == dni:
-                        listPlazas[x].ocupado = False
-                        print("Vehiculo retirado")
+                        listPlazas[x].ocupado = True
+                        print("Tdoo correcto.")
                         x = len(listPlazas)
                     else:
                         print("Dni incorrecto máquina.\n"
-                              "Introduce el DNI del propietario del vehiculo")
-                else:
-                    print("Matrícula incorrecta.\n"
-                          "No existe nigun bono activo para este vehiculo")
+                              "Introduce el DNI del propietario registrado de la plaza")
+
+                if not encontrado:
+                    print("Error., algún dato ha sido introducido erroneeamente\nIntentelo de nuevo.\n"
+                          "Si el error persoste, por favor pongase en contacto con nuestro personal.")
                 x += 1
+                encontrado = False
 
         elif decision == 4:
             x = 0

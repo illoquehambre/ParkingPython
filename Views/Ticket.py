@@ -24,7 +24,7 @@ def ticket_salida_temporal(plaza):
 def ticket_alta_abonado(plaza):
     print("TICKET")
     print("Matrícula: " + str(plaza.vehiculo.matricula))
-    print("Nombre: " + str(plaza.vehiculo.cliente.nombre))
+    print("Nombre: " + plaza.vehiculo.cliente.nombre)
     print("Apelidos: " + str(plaza.vehiculo.cliente.apellidos))
     print("DNI: " + str(plaza.vehiculo.cliente.dni))
     print("Email: " + str(plaza.vehiculo.cliente.email))
