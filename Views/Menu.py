@@ -22,3 +22,11 @@ def menu_ingreso_temporal():
     print("1 - Turismo")
     print("2 - Moto")
     print("3 - Movilidad Reducida")
+
+
+def retirar_vehiculo():
+    print("Retirar vehículo")
+    print("Pulse:")
+    print("1 - Salida Abonado")
+    print("2 - Salida cliente normal")
+    print("Cualquier otro número - Volver atrás")

@@ -1,5 +1,8 @@
+from Models.Ticket import Ticket
+
+
 class Cliente:
-    def __init__(self, ticket):
+    def __init__(self, ticket=Ticket):
         self.id = id
         self.ticket = ticket
 
