@@ -50,6 +50,8 @@ while seguir:
             seguir = False
         elif decision == 1:
             print("Estado del parking")
+            for p in listPlazas:
+                print('Id: '+str(p.idPlaza+1)+', '+'Ocupado: '+str(p.ocupado)+', '+'Reservado: '+str(p.reservado)+', ')
         elif decision == 2:
             total = 0
             fecha_inicial = input("Ingresa una fecha inicial en el formato dd/mm/aaaa: ")
@@ -233,7 +235,6 @@ while seguir:
             x = 0
             matricula = input("Por favor indique la matrícula de su vehículo")
             while x < len(listPlazas):
-                print(listPlazas[x].vehiculo.matricula)
                 if (listPlazas[x].vehiculo.matricula == matricula) and (not listPlazas[x].ocupado) \
                         and type(listPlazas[x].vehiculo.cliente) == Abonado:
                     encontrado = True
@@ -241,11 +242,11 @@ while seguir:
                     if listPlazas[x].vehiculo.cliente.dni == dni:
                         listPlazas[x].ocupado = True
                         print("Tdoo correcto.")
-                        x = len(listPlazas)
+
                     else:
                         print("Dni incorrecto máquina.\n"
                               "Introduce el DNI del propietario registrado de la plaza")
-
+                    x = len(listPlazas)
                 if not encontrado:
                     print("Error., algún dato ha sido introducido erroneeamente\nIntentelo de nuevo.\n"
                           "Si el error persoste, por favor pongase en contacto con nuestro personal.")
@@ -261,17 +262,16 @@ while seguir:
                 if listPlazas[x].ocupado and listPlazas[x].vehiculo.matricula == matricula:
                     encontrado = True
                     if type(listPlazas[x].vehiculo.cliente) == Abonado:
-                        pin = input("Introduzca su pin")
+                        pin = int(input("Introduzca su pin"))
                         if pin == listPlazas[x].vehiculo.cliente.ticket.pin:
-
-                            listPlazas[x].vehiculo.cliente.ticket.fecha_baja = datetime.now()
                             ticket_salida_temporal(listPlazas[x])
                             listPlazas[x].ocupado = False
                             print("Vehiculo retirado")
-                            x = len(listPlazas)
+
                         else:
                             print("Pin incorrecto máquina.\n"
                                   "¿De quien intentas sacar el coche pillin? ;)")
+                        x = len(listPlazas)
                     else:
                         pin = int(input("Introduzca su pin"))
                         if pin == listPlazas[x].vehiculo.cliente.ticket.pin:
@@ -291,14 +291,12 @@ while seguir:
                         else:
                             print("Pin incorrecto máquina.\n"
                                   "¿De quien intentas sacar el coche pillin? ;)")
-                            x = len(listPlazas)
-                if not encontrado:
-                    print("Vehiculo no encontrado")
                 x += 1
+            if not encontrado:
+                print("Vehiculo no encontrado")
                 encontrado = False
 
-            else:
-                print("Volver pa atras")
-
         else:
-            print("Numero incorrecto, porfavor intente de nuevo")
+            print("Volver pa atras")
+
+

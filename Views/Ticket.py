@@ -11,12 +11,10 @@ def ticket_entrada_temporal(plaza):
 
 def ticket_salida_temporal(plaza):
     print("TICKET")
-    print("Matícula: " + plaza.vehiculo.matricula)
+    print("Id Plaza: " + plaza.idPlaza)
+    print("Matrícula: " + plaza.vehiculo.matricula)
     print("Fecha de Entrada: " + str(plaza.vehiculo.cliente.ticket.fecha_alta))
     print("Fecha de Salida: " + str(plaza.vehiculo.cliente.ticket.fecha_baja))
-    print("Tiempo total: "
-          + f"{(plaza.vehiculo.cliente.ticket.fecha_baja - plaza.vehiculo.cliente.ticket.fecha_alta) / 60 :.2f}"
-          + ' meses')
     print("Precio minuto: " + f"{plaza.precio:.2f}" + "€")
     print("Total: " + f"{plaza.vehiculo.cliente.ticket.precio :.2f}" + '€')  # Calcular total a pagar
 
