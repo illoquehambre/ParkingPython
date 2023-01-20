@@ -7,10 +7,10 @@ from Models.Ticket import Ticket
 from Models.Tipo import Tipo
 from Models.Vehiculo import Vehiculo
 from datetime import datetime, timedelta
-
+import pickle
 from Services.Finds import find_matricula, find_caducados_por_mes, find_caducados_proximos
-from Views.Menu import main_menu, menu_acciones_usuario, menu_ingreso_temporal, retirar_vehiculo, menu_acciones_admin, \
-    gestiones_abonado
+from Views.Menu import main_menu, menu_acciones_usuario, menu_ingreso_temporal, menu_acciones_admin, \
+    gestiones_abonado, planes_abonos
 from Views.Resultados import mostrar_abonados
 from Views.Ticket import ticket_entrada_temporal, ticket_salida_temporal, ticket_alta_abonado
 
@@ -25,6 +25,7 @@ listVehiculos = []
 listClientes: List[Cliente] = []
 listTicket = []
 encontrado = False
+
 for i in range(numPlazas):
     if i < numPlazas * (porcentajeTurismo / 100):
         listPlazas.append(
@@ -36,7 +37,24 @@ for i in range(numPlazas):
         listPlazas.append(
             Plaza(tipo=Tipo.MovildiadReducida, precio=0.10, ocupado=False, reservado=False, vehiculo=None, idPlaza=i))
 
+with open('listTicket.pckl', 'rb') as t:
+    listTicket = pickle.load(t)
+    t.close()
+
+with open('listClientes.pckl', 'rb') as c:
+    listClientes = pickle.load(c)
+    c.close()
+
+with open('listVehiculos.pckl', 'rb') as v:
+    listVehiculos = pickle.load(v)
+    v.close()
+
+with open('listPlazas.pckl', 'rb') as p:
+    listPlazas = pickle.load(p)
+    p.close()
+
 while seguir:
+
     main_menu()
     if int(input()) == 1:
         menu_acciones_admin()
@@ -105,12 +123,7 @@ while seguir:
                             )
 
                         )
-
-                        print("Elija entre las siguientes opciones la duracion de su bono")
-                        print("1 - Mensual - 25€")
-                        print("2 - Trimestral - 70€")
-                        print("3 - Semestral - 130€")
-                        print("4 - Anual - 200€")
+                        planes_abonos()
                         decision = int(input())
                         if decision == 1:
                             listPlazas[x].vehiculo.cliente.ticket.fecha_baja \
@@ -151,11 +164,7 @@ while seguir:
                         print("2 - Modificar datos personales")
                         decision = int(input())
                         if decision == 1:
-                            print("Elija entre las siguientes opciones la duracion de su bono")
-                            print("1 - Mensual - 25€")
-                            print("2 - Trimestral - 70€")
-                            print("3 - Semestral - 130€")
-                            print("4 - Anual - 200€")
+                            planes_abonos()
                             decision = int(input())
                             if decision == 1:
                                 c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=30)
@@ -179,14 +188,24 @@ while seguir:
                             c.tarjeta = input("Tarjeta de crédito anterior: " + c.tarjeta + " Nuevo: ")
                     else:
                         print("Cliente no encontrado")
-            elif decision == 3:
+            elif decision == 3:# Esto no funciona
                 print("Borrar datos de un abonado")
+                print("Queda avisadod e antemano que esto peta")
+                dni = input("Introduce el dni del cliente")
+                for p in listPlazas:
+                    if p.reservado and p.vehiculo.cliente.dni == dni:
+                        p.vehiculo = None
+                        listVehiculos.remove(p.vehiculo)
+                        p.reservado=False
+                        p.ocupado=False
+
+
+
         elif decision == 5:
             print("Comprobar caducidad de Abonos")
             mostrar_abonados(find_caducados_proximos(listPlazas))
             mes = input("Introduzca el número del mes que desee comprobar")
             mostrar_abonados(find_caducados_por_mes(mes, listPlazas))
-
 
     else:
         menu_acciones_usuario()
@@ -298,3 +317,19 @@ while seguir:
 
         else:
             print("Volver pa atras")
+
+    with open('listTicket.pckl', 'wb') as t:
+        pickle.dump(listTicket, t)
+        t.close()
+
+    with open('listClientes.pckl', 'wb') as c:
+        pickle.dump(listClientes, c)
+        c.close()
+
+    with open('listVehiculos.pckl', 'wb') as v:
+        pickle.dump(listVehiculos, v)
+        v.close()
+
+    with open('listPlazas.pckl', 'wb') as p:
+        pickle.dump(listPlazas, p)
+        p.close()

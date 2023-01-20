@@ -55,3 +55,10 @@ def gestiones_abonado():
     print("1 - Dar de alta un Abonado")
     print("2 - Modificar un abonado")
     print("3 - Dar de baja un abonado")
+
+def planes_abonos():
+    print("Elija entre las siguientes opciones la duracion de su bono")
+    print("1 - Mensual - 25€")
+    print("2 - Trimestral - 70€")
+    print("3 - Semestral - 130€")
+    print("4 - Anual - 200€")
