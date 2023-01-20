@@ -13,7 +13,7 @@ class Vehiculo:
         return self.__matricula
 
     @matricula.setter
-    def nombre(self, nueva_matricula):
+    def matricula(self, nueva_matricula):
         self.__matricula = nueva_matricula
 
     @property
@@ -21,7 +21,7 @@ class Vehiculo:
         return self.__cliente
 
     @cliente.setter
-    def nombre(self, nuevo_cliente):
+    def cliente(self, nuevo_cliente):
         self.__cliente = nuevo_cliente
     def __str__(self):
         return '{} {}'.format(self.matricula, self.cliente)

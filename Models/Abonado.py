@@ -49,5 +49,6 @@ class Abonado(Cliente):
     @tarjeta.setter
     def tarjeta(self, nuevo_tarjeta):
         self.__tarjeta = nuevo_tarjeta
+
     def __str__(self):
         return '{} {}'.format(self.id, self.nombre, self.apellidos, self.dni, self.email, self.tarjeta)

@@ -8,7 +8,10 @@ from Models.Tipo import Tipo
 from Models.Vehiculo import Vehiculo
 from datetime import datetime, timedelta
 
-from Views.Menu import main_menu, menu_acciones_usuario, menu_ingreso_temporal, retirar_vehiculo
+from Services.Finds import find_matricula, find_caducados_por_mes, find_caducados_proximos
+from Views.Menu import main_menu, menu_acciones_usuario, menu_ingreso_temporal, retirar_vehiculo, menu_acciones_admin, \
+    gestiones_abonado
+from Views.Resultados import mostrar_abonados
 from Views.Ticket import ticket_entrada_temporal, ticket_salida_temporal, ticket_alta_abonado
 
 decision = 0
@@ -36,22 +39,15 @@ for i in range(numPlazas):
 while seguir:
     main_menu()
     if int(input()) == 1:
-        print("Zona Admin")
-        print("Bienvenido esclavo, hora de trabajar")
-        print("Indique que gestiones desea realizar: ")
-        print("0 - Cerrar programa")
-        print("1 - Consultar estado del parking")
-        print("2 - Consultar Facturación")
-        print("3 - Consultar Abonados")
-        print("4 - Gestionar abonos")
-        print("5 - Comprobar caducidad Abonos")
+        menu_acciones_admin()
         decision = int(input())
         if decision == 0:
             seguir = False
         elif decision == 1:
             print("Estado del parking")
             for p in listPlazas:
-                print('Id: '+str(p.idPlaza+1)+', '+'Ocupado: '+str(p.ocupado)+', '+'Reservado: '+str(p.reservado)+', ')
+                print('Id: ' + str(p.idPlaza + 1) + ', ' + 'Ocupado: ' + str(p.ocupado) + ', ' + 'Reservado: ' + str(
+                    p.reservado) + ', ')
         elif decision == 2:
             total = 0
             fecha_inicial = input("Ingresa una fecha inicial en el formato dd/mm/aaaa: ")
@@ -72,16 +68,9 @@ while seguir:
             print("El total recaudado es de " + f"{total:.2f}" + "€")
         elif decision == 3:
             print("Aqui se deberian poder consultar todos los abonados")
-            for a in listClientes:
-                if isinstance(a, Abonado):
-                    print("Nombre: "+str(a.nombre)+', '+"Apellidos: "+str(a.apellidos)+', '+"DNI: "+str(a.dni)
-                          +', '"Email: "+str(a.email)+', '+"Tarjeta: "+str(a.tarjeta)+',\n'+
-                          "Total: "+str(a.ticket.precio)+'€')
+            mostrar_abonados(listClientes)
         elif decision == 4:
-            print("Indique que gestiones desea realizar: ")
-            print("1 - Dar de alta un Abonado")
-            print("2 - Modificar un abonado")
-            print("3 - Dar de baja un abonado")
+            gestiones_abonado()
             decision = int(input())
 
             if decision == 1:
@@ -183,15 +172,21 @@ while seguir:
                             else:
                                 print("Opcion Incorrecta")
                         elif decision == 2:
-                            c.nombre = input("Nombre anterior: "+c.nombre+" Nuevo: ")
-                            c.apellidos = input("Apellidos anterior: "+c.apellidos+" Nuevo: ")
-                            c.dni = input("DNI anterior: "+c.dni+" Nuevo: ")
-                            c.email = input("Email anterior: "+c.email+" Nuevo: ")
-                            c.tarjeta = input("Tarjeta de crédito anterior: "+c.tarjeta+" Nuevo: ")
+                            c.nombre = input("Nombre anterior: " + c.nombre + " Nuevo: ")
+                            c.apellidos = input("Apellidos anterior: " + c.apellidos + " Nuevo: ")
+                            c.dni = input("DNI anterior: " + c.dni + " Nuevo: ")
+                            c.email = input("Email anterior: " + c.email + " Nuevo: ")
+                            c.tarjeta = input("Tarjeta de crédito anterior: " + c.tarjeta + " Nuevo: ")
                     else:
                         print("Cliente no encontrado")
             elif decision == 3:
                 print("Borrar datos de un abonado")
+        elif decision == 5:
+            print("Comprobar caducidad de Abonos")
+            mostrar_abonados(find_caducados_proximos(listPlazas))
+            mes = input("Introduzca el número del mes que desee comprobar")
+            mostrar_abonados(find_caducados_por_mes(mes, listPlazas))
+
 
     else:
         menu_acciones_usuario()
@@ -207,27 +202,32 @@ while seguir:
             x = 0
             while x < len(listPlazas):
 
-                if listPlazas[x].tipo.value == decision and (not listPlazas[x].ocupado) and (not listPlazas[x].reservado):
+                if listPlazas[x].tipo.value == decision and (not listPlazas[x].ocupado) and (
+                        not listPlazas[x].reservado):
                     print("Plaza encontrada")
-                    listPlazas[x].vehiculo = Vehiculo(
-                        matricula=input("Introduzca su matricula"),
-                        # Falta comprobar que la matricula no exista entre las guardadas
-                        cliente=Cliente(
-                            ticket=Ticket(
-                                fecha_alta=datetime.now(), fecha_baja=None, precio=None,
-                                pin=random.randint(100000, 999999)
+                    matricula = input("Introduzca su matricula")
+
+                    if find_matricula(listPlazas, matricula):
+                        listPlazas[x].vehiculo = Vehiculo(
+                            matricula=matricula,
+                            # Falta comprobar que la matricula no exista entre las guardadas
+                            cliente=Cliente(
+                                ticket=Ticket(
+                                    fecha_alta=datetime.now(), fecha_baja=None, precio=None,
+                                    pin=random.randint(100000, 999999)
+                                )
                             )
                         )
-                    )
-                    # Esto irá en uan clase Data y se volcará en el pickle cuando se indique
-                    listPlazas[x].ocupado = True
-                    listVehiculos.append(listPlazas[x].vehiculo)
-                    listClientes.append(listPlazas[x].vehiculo.cliente)
-                    listTicket.append(listPlazas[x].vehiculo.cliente.ticket)
+                        # Esto irá en uan clase Data y se volcará en el pickle cuando se indique
+                        listPlazas[x].ocupado = True
+                        listVehiculos.append(listPlazas[x].vehiculo)
+                        listClientes.append(listPlazas[x].vehiculo.cliente)
+                        listTicket.append(listPlazas[x].vehiculo.cliente.ticket)
 
-                    ticket_entrada_temporal(listPlazas[x])
-                    x = len(listPlazas)
-
+                        ticket_entrada_temporal(listPlazas[x])
+                        x = len(listPlazas)
+                    else:
+                        print("Esta matricula ya se encuentar registrada")
                 x += 1
 
         elif decision == 3:
@@ -241,7 +241,7 @@ while seguir:
                     dni = input("Por favor indique su DNI")
                     if listPlazas[x].vehiculo.cliente.dni == dni:
                         listPlazas[x].ocupado = True
-                        print("Tdoo correcto.")
+                        print("Todo correcto.")
 
                     else:
                         print("Dni incorrecto máquina.\n"
@@ -298,5 +298,3 @@ while seguir:
 
         else:
             print("Volver pa atras")
-
-
