@@ -11,7 +11,7 @@ def ticket_entrada_temporal(plaza):
 
 def ticket_salida_temporal(plaza):
     print("TICKET")
-    print("Id Plaza: " + plaza.idPlaza)
+    print("Id Plaza: " + str(plaza.idPlaza))
     print("Matrícula: " + plaza.vehiculo.matricula)
     print("Fecha de Entrada: " + str(plaza.vehiculo.cliente.ticket.fecha_alta))
     print("Fecha de Salida: " + str(plaza.vehiculo.cliente.ticket.fecha_baja))

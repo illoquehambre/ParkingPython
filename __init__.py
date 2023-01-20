@@ -103,6 +103,7 @@ while seguir:
                 while x < len(listPlazas):
                     if listPlazas[x].tipo.value == decision and (not listPlazas[x].ocupado) and (
                             not listPlazas[x].reservado):
+                        encontrado = True
                         print("Plaza encontrada")
                         print("Introduzca los siguientes datos conforme se le indiquen")
                         listPlazas[x].vehiculo = Vehiculo(
@@ -153,42 +154,57 @@ while seguir:
                         listTicket.append(listPlazas[x].vehiculo.cliente.ticket)
 
                         ticket_alta_abonado(listPlazas[x])
-                        x = len(listPlazas)
+
                     x += 1
+
             elif decision == 2:
                 print("Modificar un abonado")
                 dni = input("Introduzca el DNI del abonado por favor: ")
-                for c in listClientes:
-                    if (type(c) == Abonado) and (c.dni == dni):
-                        print("1 - Renovar abono")
-                        print("2 - Modificar datos personales")
-                        decision = int(input())
+                c = 0
+                print("1 - Renovar abono")
+                print("2 - Modificar datos personales")
+                decision = int(input())
+
+                while c < len(listClientes):
+                    encontrado = False
+                    if (type(listClientes[c]) == Abonado) and (listClientes[c].dni == dni):
+                        encontrado = True
                         if decision == 1:
                             planes_abonos()
                             decision = int(input())
                             if decision == 1:
-                                c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=30)
-                                c.ticket.precio += 25
+                                listClientes[c].ticket.fecha_baja = listClientes[c].ticket.fecha_baja + timedelta(
+                                    days=30)
+                                listClientes[c].ticket.precio += 25
                             elif decision == 2:
-                                c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=90)
-                                c.ticket.precio += 70
+                                listClientes[c].ticket.fecha_baja = listClientes[c].ticket.fecha_baja + timedelta(
+                                    days=90)
+                                listClientes[c].ticket.precio += 70
                             elif decision == 3:
-                                c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=180)
-                                c.ticket.precio += 130
+                                listClientes[c].ticket.fecha_baja = listClientes[c].ticket.fecha_baja + timedelta(
+                                    days=180)
+                                listClientes[c].ticket.precio += 130
                             elif decision == 4:
-                                c.ticket.fecha_baja = c.ticket.fecha_baja + timedelta(days=365)
-                                c.ticket.precio += 200
+                                listClientes[c].ticket.fecha_baja = listClientes[c].ticket.fecha_baja + timedelta(
+                                    days=365)
+                                listClientes[c].ticket.precio += 200
                             else:
                                 print("Opcion Incorrecta")
                         elif decision == 2:
-                            c.nombre = input("Nombre anterior: " + c.nombre + " Nuevo: ")
-                            c.apellidos = input("Apellidos anterior: " + c.apellidos + " Nuevo: ")
-                            c.dni = input("DNI anterior: " + c.dni + " Nuevo: ")
-                            c.email = input("Email anterior: " + c.email + " Nuevo: ")
-                            c.tarjeta = input("Tarjeta de crédito anterior: " + c.tarjeta + " Nuevo: ")
-                    else:
-                        print("Cliente no encontrado")
-            elif decision == 3:# Esto no funciona
+                            listClientes[c].nombre = input("Nombre anterior: " + listClientes[c].nombre + " Nuevo: ")
+                            listClientes[c].apellidos = input(
+                                "Apellidos anterior: " + listClientes[c].apellidos + " Nuevo: ")
+                            listClientes[c].dni = input("DNI anterior: " + listClientes[c].dni + " Nuevo: ")
+                            listClientes[c].email = input("Email anterior: " + listClientes[c].email + " Nuevo: ")
+                            listClientes[c].tarjeta = input(
+                                "Tarjeta de crédito anterior: " + listClientes[c].tarjeta + " Nuevo: ")
+                        c = len(listClientes)
+                    c += 1
+
+                if not encontrado:
+                    print("Cliente no encontrado")
+
+            elif decision == 3:  # Esto no funciona
                 print("Borrar datos de un abonado")
                 print("Queda avisadod e antemano que esto peta")
                 dni = input("Introduce el dni del cliente")
@@ -196,10 +212,8 @@ while seguir:
                     if p.reservado and p.vehiculo.cliente.dni == dni:
                         p.vehiculo = None
                         listVehiculos.remove(p.vehiculo)
-                        p.reservado=False
-                        p.ocupado=False
-
-
+                        p.reservado = False
+                        p.ocupado = False
 
         elif decision == 5:
             print("Comprobar caducidad de Abonos")
@@ -254,8 +268,8 @@ while seguir:
             x = 0
             matricula = input("Por favor indique la matrícula de su vehículo")
             while x < len(listPlazas):
-                if (listPlazas[x].vehiculo.matricula == matricula) and (not listPlazas[x].ocupado) \
-                        and type(listPlazas[x].vehiculo.cliente) == Abonado:
+                if (listPlazas[x].reservado and listPlazas[x].vehiculo.matricula == matricula) \
+                        and (not listPlazas[x].ocupado):
                     encontrado = True
                     dni = input("Por favor indique su DNI")
                     if listPlazas[x].vehiculo.cliente.dni == dni:
@@ -266,11 +280,13 @@ while seguir:
                         print("Dni incorrecto máquina.\n"
                               "Introduce el DNI del propietario registrado de la plaza")
                     x = len(listPlazas)
-                if not encontrado:
-                    print("Error., algún dato ha sido introducido erroneeamente\nIntentelo de nuevo.\n"
-                          "Si el error persoste, por favor pongase en contacto con nuestro personal.")
+                    encontrado = True
                 x += 1
-                encontrado = False
+
+            if not encontrado:
+                print("Error, algún dato ha sido introducido erroneeamente\nIntentelo de nuevo.\n"
+                      "Si el error persoste, por favor pongase en contacto con nuestro personal.")
+
 
         elif decision == 4:
             x = 0
@@ -302,7 +318,7 @@ while seguir:
                             listPlazas[x].vehiculo.cliente.ticket.precio = (tiempo_total.total_seconds() / 60) * \
                                                                            listPlazas[x].precio
                             ticket_salida_temporal(listPlazas[x])
-                            listVehiculos.remove(listPlazas[x].vehiculo)
+                            vehiculo = listPlazas[x].vehiculo
                             listPlazas[x].ocupado = False
                             listPlazas[x].vehiculo = None
                             print("Vehiculo retirado")
